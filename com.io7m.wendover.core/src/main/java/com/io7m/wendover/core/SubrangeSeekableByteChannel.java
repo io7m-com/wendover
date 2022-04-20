@@ -30,10 +30,10 @@ import static java.lang.Integer.toUnsignedLong;
  * A seekable byte channel that can address a subset of a delegate channel.
  */
 
-public final class SubrangeByteChannel
+public final class SubrangeSeekableByteChannel
   extends AbstractLockingChannel
 {
-  private final CloseOperationType<SubrangeByteChannel> onClose;
+  private final CloseOperationType<SubrangeSeekableByteChannel> onClose;
   private final SeekableByteChannel delegate;
   private final long baseStart;
   private final long relativeLimit;
@@ -48,11 +48,11 @@ public final class SubrangeByteChannel
    * @param inOnClose  A function executed when the channel is closed
    */
 
-  public SubrangeByteChannel(
+  public SubrangeSeekableByteChannel(
     final SeekableByteChannel inDelegate,
     final long inBase,
     final long inLimit,
-    final CloseOperationType<SubrangeByteChannel> inOnClose)
+    final CloseOperationType<SubrangeSeekableByteChannel> inOnClose)
   {
     this.delegate =
       Objects.requireNonNull(inDelegate, "delegate");
@@ -72,7 +72,7 @@ public final class SubrangeByteChannel
    * @param inLimit    The number of bytes that can be addressed
    */
 
-  public SubrangeByteChannel(
+  public SubrangeSeekableByteChannel(
     final SeekableByteChannel inDelegate,
     final long inBase,
     final long inLimit)

@@ -38,20 +38,6 @@ public final class DelegatingSeekableByteChannelTest
     this.delegate = Mockito.mock(SeekableByteChannel.class);
   }
 
-  private final class ExampleChannel extends DelegatingSeekableByteChannel
-  {
-    ExampleChannel(
-      final SeekableByteChannel inDelegate)
-    {
-      super(inDelegate);
-    }
-
-    public SeekableByteChannel getDelegate()
-    {
-      return this.delegate();
-    }
-  }
-
   /**
    * The delegate is accessible.
    *
@@ -184,5 +170,19 @@ public final class DelegatingSeekableByteChannelTest
 
     Mockito.verify(this.delegate, new Times(1))
       .close();
+  }
+
+  private final class ExampleChannel extends DelegatingSeekableByteChannel
+  {
+    ExampleChannel(
+      final SeekableByteChannel inDelegate)
+    {
+      super(inDelegate);
+    }
+
+    public SeekableByteChannel getDelegate()
+    {
+      return this.delegate();
+    }
   }
 }

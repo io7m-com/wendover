@@ -17,7 +17,7 @@
 package com.io7m.wendover.tests;
 
 import com.io7m.wendover.core.CloseOperationType;
-import com.io7m.wendover.core.SubrangeByteChannel;
+import com.io7m.wendover.core.SubrangeSeekableByteChannel;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,7 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public final class SubrangeByteChannelTest
+public final class SubrangeSeekableByteChannelTest
 {
   private Path directory;
   private Path file;
@@ -79,7 +79,7 @@ public final class SubrangeByteChannelTest
     try (var fileChannel = FileChannel.open(this.file, WRITE, READ)) {
       fileChannel.write(ByteBuffer.wrap("AAAABBBBCCCCDDDD".getBytes(UTF_8)));
 
-      try (var ch = new SubrangeByteChannel(fileChannel, 2L, 2L)) {
+      try (var ch = new SubrangeSeekableByteChannel(fileChannel, 2L, 2L)) {
         assertEquals(0L, ch.position());
         assertEquals(2L, ch.size());
         final var r = ch.read(buffer);
@@ -106,7 +106,7 @@ public final class SubrangeByteChannelTest
     try (var fileChannel = FileChannel.open(this.file, WRITE, READ)) {
       fileChannel.write(ByteBuffer.wrap("AAAABBBBCCCCDDDD".getBytes(UTF_8)));
 
-      try (var ch = new SubrangeByteChannel(fileChannel, 2L, 2L)) {
+      try (var ch = new SubrangeSeekableByteChannel(fileChannel, 2L, 2L)) {
         assertEquals(0L, ch.position());
         assertEquals(2L, ch.size());
         final var r = ch.read(buffer);
@@ -132,7 +132,7 @@ public final class SubrangeByteChannelTest
     try (var fileChannel = FileChannel.open(this.file, WRITE, READ)) {
       fileChannel.write(ByteBuffer.wrap("AAAABBBBCCCCDDDD".getBytes(UTF_8)));
 
-      try (var ch = new SubrangeByteChannel(fileChannel, 2L, 14L)) {
+      try (var ch = new SubrangeSeekableByteChannel(fileChannel, 2L, 14L)) {
         assertEquals(0L, ch.position());
         assertEquals(14L, ch.size());
 
@@ -155,7 +155,7 @@ public final class SubrangeByteChannelTest
     throws Exception
   {
     try (var fileChannel = FileChannel.open(this.file, READ)) {
-      try (var ch = new SubrangeByteChannel(fileChannel, 0L, 1000L)) {
+      try (var ch = new SubrangeSeekableByteChannel(fileChannel, 0L, 1000L)) {
         assertThrows(NonWritableChannelException.class, () -> {
           ch.write(ByteBuffer.wrap("ABCD".getBytes(UTF_8)));
         });
@@ -174,12 +174,16 @@ public final class SubrangeByteChannelTest
     throws Exception
   {
     final var called = new AtomicInteger(0);
-    final CloseOperationType<SubrangeByteChannel> onClose = (context) -> {
+    final CloseOperationType<SubrangeSeekableByteChannel> onClose = (context) -> {
       called.incrementAndGet();
     };
 
     try (var fileChannel = FileChannel.open(this.file, READ)) {
-      try (var ch = new SubrangeByteChannel(fileChannel, 0L, 1000L, onClose)) {
+      try (var ch = new SubrangeSeekableByteChannel(
+        fileChannel,
+        0L,
+        1000L,
+        onClose)) {
         assertTrue(ch.isOpen());
         ch.close();
         assertFalse(ch.isOpen());
@@ -202,7 +206,7 @@ public final class SubrangeByteChannelTest
     throws Exception
   {
     try (var fileChannel = FileChannel.open(this.file, READ)) {
-      try (var ch = new SubrangeByteChannel(fileChannel, 0L, 1000L)) {
+      try (var ch = new SubrangeSeekableByteChannel(fileChannel, 0L, 1000L)) {
         assertThrows(UnsupportedOperationException.class, () -> {
           ch.truncate(0L);
         });
