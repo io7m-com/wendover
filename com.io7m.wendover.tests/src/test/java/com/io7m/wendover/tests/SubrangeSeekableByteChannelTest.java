@@ -17,7 +17,6 @@
 package com.io7m.wendover.tests;
 
 import com.io7m.wendover.core.CloseOperationType;
-import com.io7m.wendover.core.SubrangeLimitBehavior;
 import com.io7m.wendover.core.SubrangeSeekableByteChannel;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,8 +30,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.io7m.wendover.core.SubrangeLimitBehavior.LIMIT_REACHED_RETURN_0;
-import static com.io7m.wendover.core.SubrangeLimitBehavior.LIMIT_REACHED_RETURN_EOF;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.StandardOpenOption.READ;
 import static java.nio.file.StandardOpenOption.WRITE;
@@ -82,10 +79,11 @@ public final class SubrangeSeekableByteChannelTest
     try (var fileChannel = FileChannel.open(this.file, WRITE, READ)) {
       fileChannel.write(ByteBuffer.wrap("AAAABBBBCCCCDDDD".getBytes(UTF_8)));
 
-      try (var ch = new SubrangeSeekableByteChannel(fileChannel, 2L, 2L, LIMIT_REACHED_RETURN_0)) {
+      try (var ch = new SubrangeSeekableByteChannel(fileChannel, 2L, 2L)) {
         assertEquals(0L, ch.position());
         assertEquals(2L, ch.size());
         final var r = ch.read(buffer);
+        assertEquals(2L, ch.position());
         assertEquals(2, r);
         assertArrayEquals("AA".getBytes(UTF_8), data);
       }
@@ -109,10 +107,11 @@ public final class SubrangeSeekableByteChannelTest
     try (var fileChannel = FileChannel.open(this.file, WRITE, READ)) {
       fileChannel.write(ByteBuffer.wrap("AAAABBBBCCCCDDDD".getBytes(UTF_8)));
 
-      try (var ch = new SubrangeSeekableByteChannel(fileChannel, 2L, 2L, LIMIT_REACHED_RETURN_0)) {
+      try (var ch = new SubrangeSeekableByteChannel(fileChannel, 2L, 2L)) {
         assertEquals(0L, ch.position());
         assertEquals(2L, ch.size());
         final var r = ch.read(buffer);
+        assertEquals(2L, ch.position());
         assertEquals(2, r);
         assertArrayEquals("AA\0\0\0\0\0\0".getBytes(UTF_8), data);
       }
@@ -135,12 +134,13 @@ public final class SubrangeSeekableByteChannelTest
     try (var fileChannel = FileChannel.open(this.file, WRITE, READ)) {
       fileChannel.write(ByteBuffer.wrap("AAAABBBBCCCCDDDD".getBytes(UTF_8)));
 
-      try (var ch = new SubrangeSeekableByteChannel(fileChannel, 2L, 14L, LIMIT_REACHED_RETURN_0)) {
+      try (var ch = new SubrangeSeekableByteChannel(fileChannel, 2L, 14L)) {
         assertEquals(0L, ch.position());
         assertEquals(14L, ch.size());
 
         ch.position(4L);
         final var r = ch.read(buffer);
+        assertEquals(12L, ch.position());
         assertEquals(8, r);
         assertArrayEquals("BBCCCCDD".getBytes(UTF_8), data);
       }
@@ -158,7 +158,7 @@ public final class SubrangeSeekableByteChannelTest
     throws Exception
   {
     try (var fileChannel = FileChannel.open(this.file, READ)) {
-      try (var ch = new SubrangeSeekableByteChannel(fileChannel, 0L, 1000L, LIMIT_REACHED_RETURN_0)) {
+      try (var ch = new SubrangeSeekableByteChannel(fileChannel, 0L, 1000L)) {
         assertThrows(NonWritableChannelException.class, () -> {
           ch.write(ByteBuffer.wrap("ABCD".getBytes(UTF_8)));
         });
@@ -186,7 +186,6 @@ public final class SubrangeSeekableByteChannelTest
         fileChannel,
         0L,
         1000L,
-        LIMIT_REACHED_RETURN_0,
         onClose)) {
         assertTrue(ch.isOpen());
         ch.close();
@@ -210,7 +209,7 @@ public final class SubrangeSeekableByteChannelTest
     throws Exception
   {
     try (var fileChannel = FileChannel.open(this.file, READ)) {
-      try (var ch = new SubrangeSeekableByteChannel(fileChannel, 0L, 1000L, LIMIT_REACHED_RETURN_0)) {
+      try (var ch = new SubrangeSeekableByteChannel(fileChannel, 0L, 1000L)) {
         assertThrows(UnsupportedOperationException.class, () -> {
           ch.truncate(0L);
         });
@@ -219,37 +218,7 @@ public final class SubrangeSeekableByteChannelTest
   }
 
   /**
-   * Reading data at EOF returns 0 if desired.
-   *
-   * @throws Exception On errors
-   */
-
-  @Test
-  public void testReadRemaining0()
-    throws Exception
-  {
-    final var data = new byte[2];
-    final var buffer = ByteBuffer.wrap(data);
-
-    try (var fileChannel = FileChannel.open(this.file, WRITE, READ)) {
-      fileChannel.write(ByteBuffer.wrap("AAAABBBBCCCCDDDD".getBytes(UTF_8)));
-
-      try (var ch = new SubrangeSeekableByteChannel(fileChannel, 2L, 2L, LIMIT_REACHED_RETURN_0)) {
-        assertEquals(0L, ch.position());
-        assertEquals(2L, ch.size());
-
-        var r = ch.read(buffer);
-        assertEquals(2, r);
-        assertArrayEquals("AA".getBytes(UTF_8), data);
-
-        r = ch.read(buffer);
-        assertEquals(0, r);
-      }
-    }
-  }
-
-  /**
-   * Reading data at EOF returns -1 if desired.
+   * Reading data at EOF returns -1.
    *
    * @throws Exception On errors
    */
@@ -264,76 +233,18 @@ public final class SubrangeSeekableByteChannelTest
     try (var fileChannel = FileChannel.open(this.file, WRITE, READ)) {
       fileChannel.write(ByteBuffer.wrap("AAAABBBBCCCCDDDD".getBytes(UTF_8)));
 
-      try (var ch = new SubrangeSeekableByteChannel(fileChannel, 2L, 2L, LIMIT_REACHED_RETURN_EOF)) {
-        assertEquals(0L, ch.position());
-        assertEquals(2L, ch.size());
-
-        var r = ch.read(buffer);
-        assertEquals(2, r);
-        assertArrayEquals("AA".getBytes(UTF_8), data);
-
-        r = ch.read(buffer);
-        assertEquals(-1, r);
-      }
-    }
-  }
-
-  /**
-   * Reading data at EOF returns -1 if desired.
-   *
-   * @throws Exception On errors
-   */
-
-  @Test
-  public void testReadRemainingEOFAlt0()
-    throws Exception
-  {
-    final var data = new byte[2];
-    final var buffer = ByteBuffer.wrap(data);
-
-    try (var fileChannel = FileChannel.open(this.file, WRITE, READ)) {
-      fileChannel.write(ByteBuffer.wrap("AAAABBBBCCCCDDDD".getBytes(UTF_8)));
-
       try (var ch = new SubrangeSeekableByteChannel(fileChannel, 2L, 2L)) {
         assertEquals(0L, ch.position());
         assertEquals(2L, ch.size());
 
         var r = ch.read(buffer);
         assertEquals(2, r);
+        assertEquals(2L, ch.position());
         assertArrayEquals("AA".getBytes(UTF_8), data);
 
         r = ch.read(buffer);
         assertEquals(-1, r);
-      }
-    }
-  }
-
-  /**
-   * Reading data at EOF returns -1 if desired.
-   *
-   * @throws Exception On errors
-   */
-
-  @Test
-  public void testReadRemainingEOFAlt1()
-    throws Exception
-  {
-    final var data = new byte[2];
-    final var buffer = ByteBuffer.wrap(data);
-
-    try (var fileChannel = FileChannel.open(this.file, WRITE, READ)) {
-      fileChannel.write(ByteBuffer.wrap("AAAABBBBCCCCDDDD".getBytes(UTF_8)));
-
-      try (var ch = new SubrangeSeekableByteChannel(fileChannel, 2L, 2L, context -> {})) {
-        assertEquals(0L, ch.position());
-        assertEquals(2L, ch.size());
-
-        var r = ch.read(buffer);
-        assertEquals(2, r);
-        assertArrayEquals("AA".getBytes(UTF_8), data);
-
-        r = ch.read(buffer);
-        assertEquals(-1, r);
+        assertEquals(2L, ch.position());
       }
     }
   }
