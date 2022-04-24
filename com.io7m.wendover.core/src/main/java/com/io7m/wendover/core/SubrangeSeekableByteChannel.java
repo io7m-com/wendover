@@ -23,7 +23,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.util.Objects;
 
-import static com.io7m.wendover.core.SubrangeLimitBehavior.LIMIT_REACHED_RETURN_EOF;
 import static com.io7m.wendover.core.internal.Unsigned.minUnsigned;
 import static java.lang.Integer.toUnsignedLong;
 
@@ -38,7 +37,6 @@ public final class SubrangeSeekableByteChannel
   private final SeekableByteChannel delegate;
   private final long baseStart;
   private final long relativeLimit;
-  private final SubrangeLimitBehavior limitBehavior;
   private long relativePosition;
 
   /**
@@ -47,7 +45,6 @@ public final class SubrangeSeekableByteChannel
    * @param inDelegate      The delegate channel
    * @param inBase          The base offset
    * @param inLimit         The number of bytes that can be addressed
-   * @param inLimitBehavior The limit behavior
    * @param inOnClose       A function executed when the channel is closed
    */
 
@@ -55,7 +52,6 @@ public final class SubrangeSeekableByteChannel
     final SeekableByteChannel inDelegate,
     final long inBase,
     final long inLimit,
-    final SubrangeLimitBehavior inLimitBehavior,
     final CloseOperationType<SubrangeSeekableByteChannel> inOnClose)
   {
     this.delegate =
@@ -66,46 +62,6 @@ public final class SubrangeSeekableByteChannel
     this.relativePosition = 0L;
     this.relativeLimit = inLimit;
     this.baseStart = inBase;
-    this.limitBehavior =
-      Objects.requireNonNull(inLimitBehavior, "inLimitBehavior");
-  }
-
-  /**
-   * A seekable byte channel that can address a subset of a delegate channel.
-   *
-   * @param inDelegate      The delegate channel
-   * @param inBase          The base offset
-   * @param inLimit         The number of bytes that can be addressed
-   * @param inLimitBehavior The limit behavior
-   */
-
-  public SubrangeSeekableByteChannel(
-    final SeekableByteChannel inDelegate,
-    final long inBase,
-    final long inLimit,
-    final SubrangeLimitBehavior inLimitBehavior)
-  {
-    this(inDelegate, inBase, inLimit, inLimitBehavior, context -> {
-
-    });
-  }
-
-  /**
-   * A seekable byte channel that can address a subset of a delegate channel.
-   *
-   * @param inDelegate The delegate channel
-   * @param inBase     The base offset
-   * @param inLimit    The number of bytes that can be addressed
-   * @param inOnClose  A function executed when the channel is closed
-   */
-
-  public SubrangeSeekableByteChannel(
-    final SeekableByteChannel inDelegate,
-    final long inBase,
-    final long inLimit,
-    final CloseOperationType<SubrangeSeekableByteChannel> inOnClose)
-  {
-    this(inDelegate, inBase, inLimit, LIMIT_REACHED_RETURN_EOF, inOnClose);
   }
 
   /**
@@ -121,7 +77,7 @@ public final class SubrangeSeekableByteChannel
     final long inBase,
     final long inLimit)
   {
-    this(inDelegate, inBase, inLimit, LIMIT_REACHED_RETURN_EOF, context -> {
+    this(inDelegate, inBase, inLimit, context -> {
 
     });
   }
@@ -141,10 +97,15 @@ public final class SubrangeSeekableByteChannel
        * is smaller.
        */
 
-      final var dstRemaining =
-        toUnsignedLong(dst.remaining());
       final var srcRemaining =
         this.remaining();
+
+      if (srcRemaining == 0L) {
+        return Integer.valueOf(-1);
+      }
+
+      final var dstRemaining =
+        toUnsignedLong(dst.remaining());
       final var toRead =
         minUnsigned(dstRemaining, srcRemaining);
 
@@ -155,22 +116,26 @@ public final class SubrangeSeekableByteChannel
 
       final var oldLimit = dst.limit();
       try {
-        dst.limit(Math.toIntExact(toRead));
+        dst.limit(dst.position() + Math.toIntExact(toRead));
 
         /*
-         * Store and restore the underlying channel position after reading.
+         * Store and restore the delegate's position.
          */
 
         final var oldPosition = this.delegate.position();
         try {
           this.delegate.position(this.baseStart + this.relativePosition);
+
+          /*
+           * Correctly signal EOF if necessary.
+           */
+
           final var read = this.delegate.read(dst);
-          if (read == 0) {
-            return switch (this.limitBehavior) {
-              case LIMIT_REACHED_RETURN_0 -> Integer.valueOf(0);
-              case LIMIT_REACHED_RETURN_EOF -> Integer.valueOf(-1);
-            };
+          if (read == -1) {
+            return Integer.valueOf(-1);
           }
+
+          this.relativePosition += toUnsignedLong(read);
           return Integer.valueOf(read);
         } finally {
           this.delegate.position(oldPosition);
@@ -224,7 +189,9 @@ public final class SubrangeSeekableByteChannel
         final var oldPosition = this.delegate.position();
         try {
           this.delegate.position(this.baseStart + this.relativePosition);
-          return Integer.valueOf(this.delegate.write(src));
+          final var wrote = this.delegate.write(src);
+          this.relativePosition += toUnsignedLong(wrote);
+          return Integer.valueOf(wrote);
         } finally {
           this.delegate.position(oldPosition);
         }
