@@ -23,6 +23,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.util.Objects;
 
+import static com.io7m.wendover.core.SubrangeLimitBehavior.LIMIT_REACHED_RETURN_EOF;
 import static com.io7m.wendover.core.internal.Unsigned.minUnsigned;
 import static java.lang.Integer.toUnsignedLong;
 
@@ -37,7 +38,57 @@ public final class SubrangeSeekableByteChannel
   private final SeekableByteChannel delegate;
   private final long baseStart;
   private final long relativeLimit;
+  private final SubrangeLimitBehavior limitBehavior;
   private long relativePosition;
+
+  /**
+   * A seekable byte channel that can address a subset of a delegate channel.
+   *
+   * @param inDelegate      The delegate channel
+   * @param inBase          The base offset
+   * @param inLimit         The number of bytes that can be addressed
+   * @param inLimitBehavior The limit behavior
+   * @param inOnClose       A function executed when the channel is closed
+   */
+
+  public SubrangeSeekableByteChannel(
+    final SeekableByteChannel inDelegate,
+    final long inBase,
+    final long inLimit,
+    final SubrangeLimitBehavior inLimitBehavior,
+    final CloseOperationType<SubrangeSeekableByteChannel> inOnClose)
+  {
+    this.delegate =
+      Objects.requireNonNull(inDelegate, "delegate");
+    this.onClose =
+      Objects.requireNonNull(inOnClose, "inOnClose");
+
+    this.relativePosition = 0L;
+    this.relativeLimit = inLimit;
+    this.baseStart = inBase;
+    this.limitBehavior =
+      Objects.requireNonNull(inLimitBehavior, "inLimitBehavior");
+  }
+
+  /**
+   * A seekable byte channel that can address a subset of a delegate channel.
+   *
+   * @param inDelegate      The delegate channel
+   * @param inBase          The base offset
+   * @param inLimit         The number of bytes that can be addressed
+   * @param inLimitBehavior The limit behavior
+   */
+
+  public SubrangeSeekableByteChannel(
+    final SeekableByteChannel inDelegate,
+    final long inBase,
+    final long inLimit,
+    final SubrangeLimitBehavior inLimitBehavior)
+  {
+    this(inDelegate, inBase, inLimit, inLimitBehavior, context -> {
+
+    });
+  }
 
   /**
    * A seekable byte channel that can address a subset of a delegate channel.
@@ -54,14 +105,7 @@ public final class SubrangeSeekableByteChannel
     final long inLimit,
     final CloseOperationType<SubrangeSeekableByteChannel> inOnClose)
   {
-    this.delegate =
-      Objects.requireNonNull(inDelegate, "delegate");
-    this.onClose =
-      Objects.requireNonNull(inOnClose, "inOnClose");
-
-    this.relativePosition = 0L;
-    this.relativeLimit = inLimit;
-    this.baseStart = inBase;
+    this(inDelegate, inBase, inLimit, LIMIT_REACHED_RETURN_EOF, inOnClose);
   }
 
   /**
@@ -77,7 +121,7 @@ public final class SubrangeSeekableByteChannel
     final long inBase,
     final long inLimit)
   {
-    this(inDelegate, inBase, inLimit, context -> {
+    this(inDelegate, inBase, inLimit, LIMIT_REACHED_RETURN_EOF, context -> {
 
     });
   }
@@ -120,7 +164,14 @@ public final class SubrangeSeekableByteChannel
         final var oldPosition = this.delegate.position();
         try {
           this.delegate.position(this.baseStart + this.relativePosition);
-          return Integer.valueOf(this.delegate.read(dst));
+          final var read = this.delegate.read(dst);
+          if (read == 0) {
+            return switch (this.limitBehavior) {
+              case LIMIT_REACHED_RETURN_0 -> Integer.valueOf(0);
+              case LIMIT_REACHED_RETURN_EOF -> Integer.valueOf(-1);
+            };
+          }
+          return Integer.valueOf(read);
         } finally {
           this.delegate.position(oldPosition);
         }
