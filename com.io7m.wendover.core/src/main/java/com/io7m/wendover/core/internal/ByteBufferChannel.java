@@ -71,6 +71,10 @@ public final class ByteBufferChannel
 
       try {
         this.buffer.limit(Math.toIntExact(this.position + w));
+        if (this.buffer.remaining() == 0) {
+          return Integer.valueOf(-1);
+        }
+
         dst.put(this.buffer);
       } finally {
         this.buffer.limit(this.buffer.capacity());
@@ -90,6 +94,10 @@ public final class ByteBufferChannel
 
     return this.withStateModificationLock(() -> {
       this.buffer.position(Math.toIntExact(this.position));
+      if (this.buffer.remaining() == 0) {
+        return Integer.valueOf(-1);
+      }
+
       final var w =
         minUnsigned(
           toUnsignedLong(this.buffer.remaining()),

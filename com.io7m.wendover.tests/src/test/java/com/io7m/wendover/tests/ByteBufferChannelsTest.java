@@ -21,12 +21,17 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.NonWritableChannelException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 
 import static java.nio.channels.FileChannel.MapMode.READ_WRITE;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -36,6 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public final class ByteBufferChannelsTest
@@ -183,6 +189,11 @@ public final class ByteBufferChannelsTest
       assertEquals(12L, channel.position());
       assertArrayEquals("4444445555553333".getBytes(UTF_8), backing);
       assertEquals(4L, channel.size());
+
+      w = channel.write(ByteBuffer.wrap("2222".getBytes(UTF_8)));
+      assertEquals(4, w);
+      w = channel.write(ByteBuffer.wrap("1".getBytes(UTF_8)));
+      assertEquals(-1, w);
     }
   }
 
@@ -345,6 +356,74 @@ public final class ByteBufferChannelsTest
             bb);
           assertEquals(51L, channel.position());
         }
+      }
+    }
+  }
+
+  /**
+   * Byte buffer IO signals EOF correctly.
+   *
+   * @throws Exception On errors.
+   */
+
+  @Test
+  public void testMappedIOTerminatesRead()
+    throws Exception
+  {
+    final var file =
+      WNTestDirectories.resourceOf(
+        ByteBufferChannelsTest.class,
+        this.directory,
+        "example.txt"
+      );
+
+    final var outputBytes =
+      new ByteArrayOutputStream();
+
+    try (var fileChannel = FileChannel.open(file, READ, WRITE)) {
+      final var map =
+        fileChannel.map(READ_WRITE, 0L, fileChannel.size());
+
+      try (var channel = ByteBufferChannels.ofByteBuffer(map)) {
+        assertTimeoutPreemptively(Duration.ofSeconds(1L), () -> {
+          Channels.newInputStream(channel)
+            .transferTo(outputBytes);
+        });
+      }
+    }
+  }
+
+  /**
+   * Byte buffer IO signals EOF correctly.
+   *
+   * @throws Exception On errors.
+   */
+
+  @Test
+  public void testMappedIOTerminatesWrite()
+    throws Exception
+  {
+    final var file =
+      WNTestDirectories.resourceOf(
+        ByteBufferChannelsTest.class,
+        this.directory,
+        "example.txt"
+      );
+
+    final var sourceBytes = new ByteArrayOutputStream();
+    sourceBytes.write(Files.readAllBytes(file));
+
+    final var inputBytes =
+      new ByteArrayInputStream(sourceBytes.toByteArray());
+
+    try (var fileChannel = FileChannel.open(file, READ, WRITE)) {
+      final var map =
+        fileChannel.map(READ_WRITE, 0L, fileChannel.size());
+
+      try (var channel = ByteBufferChannels.ofByteBuffer(map)) {
+        assertTimeoutPreemptively(Duration.ofSeconds(1L), () -> {
+          inputBytes.transferTo(Channels.newOutputStream(channel));
+        });
       }
     }
   }
