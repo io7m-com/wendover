@@ -16,54 +16,25 @@
 
 package com.io7m.wendover.tests;
 
-import com.io7m.wendover.core.UpperRangeTrackingSeekableByteChannel;
-import org.junit.jupiter.api.AfterEach;
+import com.io7m.wendover.core.CloseShieldSeekableByteChannel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.mockito.internal.verification.Times;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.channels.SeekableByteChannel;
-import java.nio.file.Path;
 
-import static java.nio.file.StandardOpenOption.CREATE;
-import static java.nio.file.StandardOpenOption.READ;
-import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
-import static java.nio.file.StandardOpenOption.WRITE;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-public final class UpperRangeTrackingSeekableByteChannelTest
+public final class CloseShieldSeekableByteChannelTest
 {
   private SeekableByteChannel delegate;
-  private Path directory;
-  private Path file;
-  private FileChannel fileChannel;
 
   @BeforeEach
   public void setup()
-    throws IOException
   {
-    this.delegate =
-      Mockito.mock(SeekableByteChannel.class);
-
-    this.directory =
-      WNTestDirectories.createTempDirectory();
-    this.file =
-      this.directory.resolve("file.bin");
-    this.fileChannel =
-      FileChannel.open(this.file, CREATE, READ, WRITE, TRUNCATE_EXISTING);
-  }
-
-  @AfterEach
-  public void tearDown()
-    throws IOException
-  {
-    this.fileChannel.close();
-    WNTestDirectories.deleteDirectory(this.directory);
+    this.delegate = Mockito.mock(SeekableByteChannel.class);
   }
 
   /**
@@ -76,8 +47,8 @@ public final class UpperRangeTrackingSeekableByteChannelTest
   public void testRead()
     throws Exception
   {
-    final var channel = new UpperRangeTrackingSeekableByteChannel(this.delegate);
-    channel.read(Mockito.mock(ByteBuffer.class));
+    final var channel = new CloseShieldSeekableByteChannel(this.delegate);
+    channel.read(ByteBuffer.allocate(23));
 
     Mockito.verify(this.delegate, new Times(1))
       .read(Mockito.any());
@@ -93,8 +64,8 @@ public final class UpperRangeTrackingSeekableByteChannelTest
   public void testWrite()
     throws Exception
   {
-    final var channel = new UpperRangeTrackingSeekableByteChannel(this.delegate);
-    channel.write(Mockito.mock(ByteBuffer.class));
+    final var channel = new CloseShieldSeekableByteChannel(this.delegate);
+    channel.write(ByteBuffer.allocate(23));
 
     Mockito.verify(this.delegate, new Times(1))
       .write(Mockito.any());
@@ -110,7 +81,7 @@ public final class UpperRangeTrackingSeekableByteChannelTest
   public void testPosition()
     throws Exception
   {
-    final var channel = new UpperRangeTrackingSeekableByteChannel(this.delegate);
+    final var channel = new CloseShieldSeekableByteChannel(this.delegate);
     channel.position();
 
     Mockito.verify(this.delegate, new Times(1))
@@ -127,7 +98,7 @@ public final class UpperRangeTrackingSeekableByteChannelTest
   public void testPositionSet()
     throws Exception
   {
-    final var channel = new UpperRangeTrackingSeekableByteChannel(this.delegate);
+    final var channel = new CloseShieldSeekableByteChannel(this.delegate);
     channel.position(23L);
 
     Mockito.verify(this.delegate, new Times(1))
@@ -144,7 +115,7 @@ public final class UpperRangeTrackingSeekableByteChannelTest
   public void testSize()
     throws Exception
   {
-    final var channel = new UpperRangeTrackingSeekableByteChannel(this.delegate);
+    final var channel = new CloseShieldSeekableByteChannel(this.delegate);
     channel.size();
 
     Mockito.verify(this.delegate, new Times(1))
@@ -161,7 +132,7 @@ public final class UpperRangeTrackingSeekableByteChannelTest
   public void testTruncate()
     throws Exception
   {
-    final var channel = new UpperRangeTrackingSeekableByteChannel(this.delegate);
+    final var channel = new CloseShieldSeekableByteChannel(this.delegate);
     channel.truncate(23L);
 
     Mockito.verify(this.delegate, new Times(1))
@@ -178,38 +149,11 @@ public final class UpperRangeTrackingSeekableByteChannelTest
   public void testClose()
     throws Exception
   {
-    final var channel = new UpperRangeTrackingSeekableByteChannel(this.delegate);
+    final var channel = new CloseShieldSeekableByteChannel(this.delegate);
     channel.close();
     assertFalse(channel.isOpen());
 
-    Mockito.verify(this.delegate, new Times(1))
+    Mockito.verify(this.delegate, new Times(0))
       .close();
-  }
-
-  /**
-   * The written position is correct.
-   *
-   * @throws Exception On errors
-   */
-
-  @Test
-  public void testWritePositions()
-    throws Exception
-  {
-    final var data = ByteBuffer.allocate(23);
-
-    final var channel = new UpperRangeTrackingSeekableByteChannel(this.fileChannel);
-    channel.write(data);
-    assertEquals(23L, channel.uppermostWritten());
-
-    data.flip();
-    channel.write(data);
-    assertEquals(46L, channel.uppermostWritten());
-
-    channel.position(40L);
-
-    data.flip();
-    channel.write(data);
-    assertEquals(63L, channel.uppermostWritten());
   }
 }

@@ -16,18 +16,19 @@
 
 package com.io7m.wendover.tests;
 
-import com.io7m.wendover.core.CloseShieldSeekableByteChannel;
+import com.io7m.wendover.core.ReadOnlySeekableByteChannel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.mockito.internal.verification.Times;
 
 import java.nio.ByteBuffer;
+import java.nio.channels.NonWritableChannelException;
 import java.nio.channels.SeekableByteChannel;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public final class CloseShieldSeekableByteChannelTest
+public final class ReadOnlySeekableByteChannelTest
 {
   private SeekableByteChannel delegate;
 
@@ -47,15 +48,15 @@ public final class CloseShieldSeekableByteChannelTest
   public void testRead()
     throws Exception
   {
-    final var channel = new CloseShieldSeekableByteChannel(this.delegate);
-    channel.read(Mockito.mock(ByteBuffer.class));
+    final var channel = new ReadOnlySeekableByteChannel(this.delegate);
+    channel.read(ByteBuffer.allocate(23));
 
     Mockito.verify(this.delegate, new Times(1))
       .read(Mockito.any());
   }
 
   /**
-   * Operations are delegated.
+   * Writing is denied.
    *
    * @throws Exception On errors
    */
@@ -64,10 +65,13 @@ public final class CloseShieldSeekableByteChannelTest
   public void testWrite()
     throws Exception
   {
-    final var channel = new CloseShieldSeekableByteChannel(this.delegate);
-    channel.write(Mockito.mock(ByteBuffer.class));
+    final var channel = new ReadOnlySeekableByteChannel(this.delegate);
 
-    Mockito.verify(this.delegate, new Times(1))
+    assertThrows(NonWritableChannelException.class, () -> {
+      channel.write(ByteBuffer.allocate(23));
+    });
+
+    Mockito.verify(this.delegate, new Times(0))
       .write(Mockito.any());
   }
 
@@ -81,7 +85,7 @@ public final class CloseShieldSeekableByteChannelTest
   public void testPosition()
     throws Exception
   {
-    final var channel = new CloseShieldSeekableByteChannel(this.delegate);
+    final var channel = new ReadOnlySeekableByteChannel(this.delegate);
     channel.position();
 
     Mockito.verify(this.delegate, new Times(1))
@@ -98,7 +102,7 @@ public final class CloseShieldSeekableByteChannelTest
   public void testPositionSet()
     throws Exception
   {
-    final var channel = new CloseShieldSeekableByteChannel(this.delegate);
+    final var channel = new ReadOnlySeekableByteChannel(this.delegate);
     channel.position(23L);
 
     Mockito.verify(this.delegate, new Times(1))
@@ -115,7 +119,7 @@ public final class CloseShieldSeekableByteChannelTest
   public void testSize()
     throws Exception
   {
-    final var channel = new CloseShieldSeekableByteChannel(this.delegate);
+    final var channel = new ReadOnlySeekableByteChannel(this.delegate);
     channel.size();
 
     Mockito.verify(this.delegate, new Times(1))
@@ -123,7 +127,7 @@ public final class CloseShieldSeekableByteChannelTest
   }
 
   /**
-   * Operations are delegated.
+   * Writes are denied.
    *
    * @throws Exception On errors
    */
@@ -132,10 +136,13 @@ public final class CloseShieldSeekableByteChannelTest
   public void testTruncate()
     throws Exception
   {
-    final var channel = new CloseShieldSeekableByteChannel(this.delegate);
-    channel.truncate(23L);
+    final var channel = new ReadOnlySeekableByteChannel(this.delegate);
 
-    Mockito.verify(this.delegate, new Times(1))
+    assertThrows(NonWritableChannelException.class, () -> {
+      channel.truncate(23L);
+    });
+
+    Mockito.verify(this.delegate, new Times(0))
       .truncate(23L);
   }
 
@@ -149,11 +156,10 @@ public final class CloseShieldSeekableByteChannelTest
   public void testClose()
     throws Exception
   {
-    final var channel = new CloseShieldSeekableByteChannel(this.delegate);
+    final var channel = new ReadOnlySeekableByteChannel(this.delegate);
     channel.close();
-    assertFalse(channel.isOpen());
 
-    Mockito.verify(this.delegate, new Times(0))
+    Mockito.verify(this.delegate, new Times(1))
       .close();
   }
 }

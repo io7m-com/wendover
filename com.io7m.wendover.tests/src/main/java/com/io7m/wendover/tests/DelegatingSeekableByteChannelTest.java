@@ -16,19 +16,19 @@
 
 package com.io7m.wendover.tests;
 
-import com.io7m.wendover.core.ReadOnlySeekableByteChannel;
+import com.io7m.wendover.core.DelegatingSeekableByteChannel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.mockito.internal.verification.Times;
 
 import java.nio.ByteBuffer;
-import java.nio.channels.NonWritableChannelException;
 import java.nio.channels.SeekableByteChannel;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
-public final class ReadOnlySeekableByteChannelTest
+public final class DelegatingSeekableByteChannelTest
 {
   private SeekableByteChannel delegate;
 
@@ -36,6 +36,20 @@ public final class ReadOnlySeekableByteChannelTest
   public void setup()
   {
     this.delegate = Mockito.mock(SeekableByteChannel.class);
+  }
+
+  /**
+   * The delegate is accessible.
+   *
+   * @throws Exception On errors
+   */
+
+  @Test
+  public void testDelegate()
+    throws Exception
+  {
+    final var channel = new ExampleChannel(this.delegate);
+    assertEquals(this.delegate, channel.getDelegate());
   }
 
   /**
@@ -48,15 +62,15 @@ public final class ReadOnlySeekableByteChannelTest
   public void testRead()
     throws Exception
   {
-    final var channel = new ReadOnlySeekableByteChannel(this.delegate);
-    channel.read(Mockito.mock(ByteBuffer.class));
+    final var channel = new ExampleChannel(this.delegate);
+    channel.read(ByteBuffer.allocate(23));
 
     Mockito.verify(this.delegate, new Times(1))
       .read(Mockito.any());
   }
 
   /**
-   * Writing is denied.
+   * Operations are delegated.
    *
    * @throws Exception On errors
    */
@@ -65,13 +79,10 @@ public final class ReadOnlySeekableByteChannelTest
   public void testWrite()
     throws Exception
   {
-    final var channel = new ReadOnlySeekableByteChannel(this.delegate);
+    final var channel = new ExampleChannel(this.delegate);
+    channel.write(ByteBuffer.allocate(23));
 
-    assertThrows(NonWritableChannelException.class, () -> {
-      channel.write(Mockito.mock(ByteBuffer.class));
-    });
-
-    Mockito.verify(this.delegate, new Times(0))
+    Mockito.verify(this.delegate, new Times(1))
       .write(Mockito.any());
   }
 
@@ -85,7 +96,7 @@ public final class ReadOnlySeekableByteChannelTest
   public void testPosition()
     throws Exception
   {
-    final var channel = new ReadOnlySeekableByteChannel(this.delegate);
+    final var channel = new ExampleChannel(this.delegate);
     channel.position();
 
     Mockito.verify(this.delegate, new Times(1))
@@ -102,7 +113,7 @@ public final class ReadOnlySeekableByteChannelTest
   public void testPositionSet()
     throws Exception
   {
-    final var channel = new ReadOnlySeekableByteChannel(this.delegate);
+    final var channel = new ExampleChannel(this.delegate);
     channel.position(23L);
 
     Mockito.verify(this.delegate, new Times(1))
@@ -119,7 +130,7 @@ public final class ReadOnlySeekableByteChannelTest
   public void testSize()
     throws Exception
   {
-    final var channel = new ReadOnlySeekableByteChannel(this.delegate);
+    final var channel = new ExampleChannel(this.delegate);
     channel.size();
 
     Mockito.verify(this.delegate, new Times(1))
@@ -127,7 +138,7 @@ public final class ReadOnlySeekableByteChannelTest
   }
 
   /**
-   * Writes are denied.
+   * Operations are delegated.
    *
    * @throws Exception On errors
    */
@@ -136,13 +147,10 @@ public final class ReadOnlySeekableByteChannelTest
   public void testTruncate()
     throws Exception
   {
-    final var channel = new ReadOnlySeekableByteChannel(this.delegate);
+    final var channel = new ExampleChannel(this.delegate);
+    channel.truncate(23L);
 
-    assertThrows(NonWritableChannelException.class, () -> {
-      channel.truncate(23L);
-    });
-
-    Mockito.verify(this.delegate, new Times(0))
+    Mockito.verify(this.delegate, new Times(1))
       .truncate(23L);
   }
 
@@ -156,10 +164,25 @@ public final class ReadOnlySeekableByteChannelTest
   public void testClose()
     throws Exception
   {
-    final var channel = new ReadOnlySeekableByteChannel(this.delegate);
+    final var channel = new ExampleChannel(this.delegate);
     channel.close();
+    assertFalse(channel.isOpen());
 
     Mockito.verify(this.delegate, new Times(1))
       .close();
+  }
+
+  private final class ExampleChannel extends DelegatingSeekableByteChannel
+  {
+    ExampleChannel(
+      final SeekableByteChannel inDelegate)
+    {
+      super(inDelegate);
+    }
+
+    public SeekableByteChannel getDelegate()
+    {
+      return this.delegate();
+    }
   }
 }
