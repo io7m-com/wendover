@@ -77,7 +77,7 @@ public final class UpperRangeTrackingSeekableByteChannelTest
     throws Exception
   {
     final var channel = new UpperRangeTrackingSeekableByteChannel(this.delegate);
-    channel.read(Mockito.mock(ByteBuffer.class));
+    channel.read(ByteBuffer.allocate(100));
 
     Mockito.verify(this.delegate, new Times(1))
       .read(Mockito.any());
@@ -94,7 +94,7 @@ public final class UpperRangeTrackingSeekableByteChannelTest
     throws Exception
   {
     final var channel = new UpperRangeTrackingSeekableByteChannel(this.delegate);
-    channel.write(Mockito.mock(ByteBuffer.class));
+    channel.write(ByteBuffer.allocate(100));
 
     Mockito.verify(this.delegate, new Times(1))
       .write(Mockito.any());
