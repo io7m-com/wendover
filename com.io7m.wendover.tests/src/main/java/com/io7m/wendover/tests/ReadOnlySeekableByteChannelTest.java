@@ -49,7 +49,7 @@ public final class ReadOnlySeekableByteChannelTest
     throws Exception
   {
     final var channel = new ReadOnlySeekableByteChannel(this.delegate);
-    channel.read(Mockito.mock(ByteBuffer.class));
+    channel.read(ByteBuffer.allocate(23));
 
     Mockito.verify(this.delegate, new Times(1))
       .read(Mockito.any());
@@ -68,7 +68,7 @@ public final class ReadOnlySeekableByteChannelTest
     final var channel = new ReadOnlySeekableByteChannel(this.delegate);
 
     assertThrows(NonWritableChannelException.class, () -> {
-      channel.write(Mockito.mock(ByteBuffer.class));
+      channel.write(ByteBuffer.allocate(23));
     });
 
     Mockito.verify(this.delegate, new Times(0))
