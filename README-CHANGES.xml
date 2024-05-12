@@ -4,8 +4,13 @@
     <c:release date="2023-07-01T00:00:00+00:00" is-open="false" ticket-system="com.github.io7m.wendover" version="1.0.0">
       <c:changes/>
     </c:release>
-    <c:release date="2023-07-01T12:48:56+00:00" is-open="false" ticket-system="com.github.io7m.wendover" version="1.0.1">
+    <c:release date="2023-07-01T00:00:00+00:00" is-open="false" ticket-system="com.github.io7m.wendover" version="1.0.1">
       <c:changes/>
+    </c:release>
+    <c:release date="2024-05-12T09:42:35+00:00" is-open="true" ticket-system="com.github.io7m.wendover" version="1.0.2">
+      <c:changes>
+        <c:change date="2024-05-12T09:42:35+00:00" summary="Move to new organization."/>
+      </c:changes>
     </c:release>
   </c:releases>
   <c:ticket-systems>
