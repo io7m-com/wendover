@@ -13,7 +13,7 @@
 
   <groupId>com.io7m.wendover</groupId>
   <artifactId>com.io7m.wendover</artifactId>
-  <version>1.0.2</version>
+  <version>1.0.3-SNAPSHOT</version>
 
   <packaging>pom</packaging>
   <name>com.io7m.wendover</name>
@@ -27,7 +27,7 @@
 
   <properties>
     <!-- Configuration. -->
-    <io7m.api.previousVersion>1.0.1</io7m.api.previousVersion>
+    <io7m.api.previousVersion>1.0.2</io7m.api.previousVersion>
     <io7m.java.targetJavaVersion>17</io7m.java.targetJavaVersion>
 
     <!-- Third-party dependencies. -->
