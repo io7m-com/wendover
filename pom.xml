@@ -31,7 +31,8 @@
     <io7m.java.targetJavaVersion>17</io7m.java.targetJavaVersion>
 
     <!-- Third-party dependencies. -->
-    <junit.version>5.10.2</junit.version>
+    <org.junit.version>5.10.2</org.junit.version>
+    <net.byte-buddy.version>1.14.16</net.byte-buddy.version>
   </properties>
 
   <licenses>
@@ -112,14 +113,11 @@
 
       <!-- Test suite. -->
       <dependency>
-        <groupId>org.junit.jupiter</groupId>
-        <artifactId>junit-jupiter-api</artifactId>
-        <version>${junit.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.junit.jupiter</groupId>
-        <artifactId>junit-jupiter-engine</artifactId>
-        <version>${junit.version}</version>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>${org.junit.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
       </dependency>
 
       <!-- Mockito. -->
@@ -131,12 +129,12 @@
       <dependency>
         <groupId>net.bytebuddy</groupId>
         <artifactId>byte-buddy-agent</artifactId>
-        <version>1.14.16</version>
+        <version>${net.byte-buddy.version}</version>
       </dependency>
       <dependency>
         <groupId>net.bytebuddy</groupId>
         <artifactId>byte-buddy</artifactId>
-        <version>1.14.16</version>
+        <version>${net.byte-buddy.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
