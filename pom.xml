@@ -31,7 +31,7 @@
     <io7m.java.targetJavaVersion>17</io7m.java.targetJavaVersion>
 
     <!-- Third-party dependencies. -->
-    <org.junit.version>5.10.2</org.junit.version>
+    <org.junit.version>5.10.3</org.junit.version>
     <net.byte-buddy.version>1.14.17</net.byte-buddy.version>
   </properties>
 
