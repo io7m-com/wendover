@@ -20,13 +20,13 @@ import com.io7m.wendover.core.DelegatingSeekableByteChannel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.mockito.internal.verification.Times;
 
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.mockito.Mockito.times;
 
 public final class DelegatingSeekableByteChannelTest
 {
@@ -65,7 +65,7 @@ public final class DelegatingSeekableByteChannelTest
     final var channel = new ExampleChannel(this.delegate);
     channel.read(ByteBuffer.allocate(23));
 
-    Mockito.verify(this.delegate, new Times(1))
+    Mockito.verify(this.delegate, times(1))
       .read(Mockito.any());
   }
 
@@ -82,7 +82,7 @@ public final class DelegatingSeekableByteChannelTest
     final var channel = new ExampleChannel(this.delegate);
     channel.write(ByteBuffer.allocate(23));
 
-    Mockito.verify(this.delegate, new Times(1))
+    Mockito.verify(this.delegate, times(1))
       .write(Mockito.any());
   }
 
@@ -99,7 +99,7 @@ public final class DelegatingSeekableByteChannelTest
     final var channel = new ExampleChannel(this.delegate);
     channel.position();
 
-    Mockito.verify(this.delegate, new Times(1))
+    Mockito.verify(this.delegate, times(1))
       .position();
   }
 
@@ -116,7 +116,7 @@ public final class DelegatingSeekableByteChannelTest
     final var channel = new ExampleChannel(this.delegate);
     channel.position(23L);
 
-    Mockito.verify(this.delegate, new Times(1))
+    Mockito.verify(this.delegate, times(1))
       .position(23L);
   }
 
@@ -133,7 +133,7 @@ public final class DelegatingSeekableByteChannelTest
     final var channel = new ExampleChannel(this.delegate);
     channel.size();
 
-    Mockito.verify(this.delegate, new Times(1))
+    Mockito.verify(this.delegate, times(1))
       .size();
   }
 
@@ -150,7 +150,7 @@ public final class DelegatingSeekableByteChannelTest
     final var channel = new ExampleChannel(this.delegate);
     channel.truncate(23L);
 
-    Mockito.verify(this.delegate, new Times(1))
+    Mockito.verify(this.delegate, times(1))
       .truncate(23L);
   }
 
@@ -168,7 +168,7 @@ public final class DelegatingSeekableByteChannelTest
     channel.close();
     assertFalse(channel.isOpen());
 
-    Mockito.verify(this.delegate, new Times(1))
+    Mockito.verify(this.delegate, times(1))
       .close();
   }
 

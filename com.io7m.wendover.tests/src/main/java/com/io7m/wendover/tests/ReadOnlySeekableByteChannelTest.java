@@ -20,13 +20,13 @@ import com.io7m.wendover.core.ReadOnlySeekableByteChannel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.mockito.internal.verification.Times;
 
 import java.nio.ByteBuffer;
 import java.nio.channels.NonWritableChannelException;
 import java.nio.channels.SeekableByteChannel;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.times;
 
 public final class ReadOnlySeekableByteChannelTest
 {
@@ -51,7 +51,7 @@ public final class ReadOnlySeekableByteChannelTest
     final var channel = new ReadOnlySeekableByteChannel(this.delegate);
     channel.read(ByteBuffer.allocate(23));
 
-    Mockito.verify(this.delegate, new Times(1))
+    Mockito.verify(this.delegate, times(1))
       .read(Mockito.any());
   }
 
@@ -71,7 +71,7 @@ public final class ReadOnlySeekableByteChannelTest
       channel.write(ByteBuffer.allocate(23));
     });
 
-    Mockito.verify(this.delegate, new Times(0))
+    Mockito.verify(this.delegate, times(0))
       .write(Mockito.any());
   }
 
@@ -88,7 +88,7 @@ public final class ReadOnlySeekableByteChannelTest
     final var channel = new ReadOnlySeekableByteChannel(this.delegate);
     channel.position();
 
-    Mockito.verify(this.delegate, new Times(1))
+    Mockito.verify(this.delegate, times(1))
       .position();
   }
 
@@ -105,7 +105,7 @@ public final class ReadOnlySeekableByteChannelTest
     final var channel = new ReadOnlySeekableByteChannel(this.delegate);
     channel.position(23L);
 
-    Mockito.verify(this.delegate, new Times(1))
+    Mockito.verify(this.delegate, times(1))
       .position(23L);
   }
 
@@ -122,7 +122,7 @@ public final class ReadOnlySeekableByteChannelTest
     final var channel = new ReadOnlySeekableByteChannel(this.delegate);
     channel.size();
 
-    Mockito.verify(this.delegate, new Times(1))
+    Mockito.verify(this.delegate, times(1))
       .size();
   }
 
@@ -142,7 +142,7 @@ public final class ReadOnlySeekableByteChannelTest
       channel.truncate(23L);
     });
 
-    Mockito.verify(this.delegate, new Times(0))
+    Mockito.verify(this.delegate, times(0))
       .truncate(23L);
   }
 
@@ -159,7 +159,7 @@ public final class ReadOnlySeekableByteChannelTest
     final var channel = new ReadOnlySeekableByteChannel(this.delegate);
     channel.close();
 
-    Mockito.verify(this.delegate, new Times(1))
+    Mockito.verify(this.delegate, times(1))
       .close();
   }
 }

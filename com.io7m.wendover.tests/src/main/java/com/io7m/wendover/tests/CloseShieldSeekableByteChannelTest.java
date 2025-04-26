@@ -20,12 +20,12 @@ import com.io7m.wendover.core.CloseShieldSeekableByteChannel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.mockito.internal.verification.Times;
 
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.mockito.Mockito.times;
 
 public final class CloseShieldSeekableByteChannelTest
 {
@@ -50,7 +50,7 @@ public final class CloseShieldSeekableByteChannelTest
     final var channel = new CloseShieldSeekableByteChannel(this.delegate);
     channel.read(ByteBuffer.allocate(23));
 
-    Mockito.verify(this.delegate, new Times(1))
+    Mockito.verify(this.delegate, times(1))
       .read(Mockito.any());
   }
 
@@ -67,7 +67,7 @@ public final class CloseShieldSeekableByteChannelTest
     final var channel = new CloseShieldSeekableByteChannel(this.delegate);
     channel.write(ByteBuffer.allocate(23));
 
-    Mockito.verify(this.delegate, new Times(1))
+    Mockito.verify(this.delegate, times(1))
       .write(Mockito.any());
   }
 
@@ -84,7 +84,7 @@ public final class CloseShieldSeekableByteChannelTest
     final var channel = new CloseShieldSeekableByteChannel(this.delegate);
     channel.position();
 
-    Mockito.verify(this.delegate, new Times(1))
+    Mockito.verify(this.delegate, times(1))
       .position();
   }
 
@@ -101,7 +101,7 @@ public final class CloseShieldSeekableByteChannelTest
     final var channel = new CloseShieldSeekableByteChannel(this.delegate);
     channel.position(23L);
 
-    Mockito.verify(this.delegate, new Times(1))
+    Mockito.verify(this.delegate, times(1))
       .position(23L);
   }
 
@@ -118,7 +118,7 @@ public final class CloseShieldSeekableByteChannelTest
     final var channel = new CloseShieldSeekableByteChannel(this.delegate);
     channel.size();
 
-    Mockito.verify(this.delegate, new Times(1))
+    Mockito.verify(this.delegate, times(1))
       .size();
   }
 
@@ -135,7 +135,7 @@ public final class CloseShieldSeekableByteChannelTest
     final var channel = new CloseShieldSeekableByteChannel(this.delegate);
     channel.truncate(23L);
 
-    Mockito.verify(this.delegate, new Times(1))
+    Mockito.verify(this.delegate, times(1))
       .truncate(23L);
   }
 
@@ -153,7 +153,7 @@ public final class CloseShieldSeekableByteChannelTest
     channel.close();
     assertFalse(channel.isOpen());
 
-    Mockito.verify(this.delegate, new Times(0))
+    Mockito.verify(this.delegate, times(0))
       .close();
   }
 }
