@@ -16,7 +16,7 @@
 
 package com.io7m.wendover.tests;
 
-import com.io7m.wendover.core.DelegatingSeekableByteChannel;
+import com.io7m.wendover.core.UncloseableSeekableByteChannel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -24,11 +24,12 @@ import org.mockito.Mockito;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.when;
 
-public final class DelegatingSeekableByteChannelTest
+public final class UncloseableSeekableByteChannelTest
 {
   private SeekableByteChannel delegate;
 
@@ -36,20 +37,6 @@ public final class DelegatingSeekableByteChannelTest
   public void setup()
   {
     this.delegate = Mockito.mock(SeekableByteChannel.class);
-  }
-
-  /**
-   * The delegate is accessible.
-   *
-   * @throws Exception On errors
-   */
-
-  @Test
-  public void testDelegate()
-    throws Exception
-  {
-    final var channel = new ExampleChannel(this.delegate);
-    assertEquals(this.delegate, channel.getDelegate());
   }
 
   /**
@@ -62,7 +49,7 @@ public final class DelegatingSeekableByteChannelTest
   public void testRead()
     throws Exception
   {
-    final var channel = new ExampleChannel(this.delegate);
+    final var channel = new UncloseableSeekableByteChannel(this.delegate);
     channel.read(ByteBuffer.allocate(23));
 
     Mockito.verify(this.delegate, times(1))
@@ -79,7 +66,7 @@ public final class DelegatingSeekableByteChannelTest
   public void testWrite()
     throws Exception
   {
-    final var channel = new ExampleChannel(this.delegate);
+    final var channel = new UncloseableSeekableByteChannel(this.delegate);
     channel.write(ByteBuffer.allocate(23));
 
     Mockito.verify(this.delegate, times(1))
@@ -96,7 +83,7 @@ public final class DelegatingSeekableByteChannelTest
   public void testPosition()
     throws Exception
   {
-    final var channel = new ExampleChannel(this.delegate);
+    final var channel = new UncloseableSeekableByteChannel(this.delegate);
     channel.position();
 
     Mockito.verify(this.delegate, times(1))
@@ -113,7 +100,7 @@ public final class DelegatingSeekableByteChannelTest
   public void testPositionSet()
     throws Exception
   {
-    final var channel = new ExampleChannel(this.delegate);
+    final var channel = new UncloseableSeekableByteChannel(this.delegate);
     channel.position(23L);
 
     Mockito.verify(this.delegate, times(1))
@@ -130,7 +117,7 @@ public final class DelegatingSeekableByteChannelTest
   public void testSize()
     throws Exception
   {
-    final var channel = new ExampleChannel(this.delegate);
+    final var channel = new UncloseableSeekableByteChannel(this.delegate);
     channel.size();
 
     Mockito.verify(this.delegate, times(1))
@@ -147,7 +134,7 @@ public final class DelegatingSeekableByteChannelTest
   public void testTruncate()
     throws Exception
   {
-    final var channel = new ExampleChannel(this.delegate);
+    final var channel = new UncloseableSeekableByteChannel(this.delegate);
     channel.truncate(23L);
 
     Mockito.verify(this.delegate, times(1))
@@ -164,25 +151,20 @@ public final class DelegatingSeekableByteChannelTest
   public void testClose()
     throws Exception
   {
-    final var channel = new ExampleChannel(this.delegate);
+    final var channel = new UncloseableSeekableByteChannel(this.delegate);
+
+    when(this.delegate.isOpen())
+      .thenReturn(true);
+    assertTrue(channel.isOpen());
+
     channel.close();
+    assertTrue(channel.isOpen());
+
+    when(this.delegate.isOpen())
+      .thenReturn(false);
     assertFalse(channel.isOpen());
 
-    Mockito.verify(this.delegate, times(1))
+    Mockito.verify(this.delegate, times(0))
       .close();
-  }
-
-  private final class ExampleChannel extends DelegatingSeekableByteChannel
-  {
-    ExampleChannel(
-      final SeekableByteChannel inDelegate)
-    {
-      super(inDelegate);
-    }
-
-    public SeekableByteChannel getDelegate()
-    {
-      return this.delegate();
-    }
   }
 }

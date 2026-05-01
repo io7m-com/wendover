@@ -21,7 +21,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.mockito.internal.verification.Times;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -35,6 +34,7 @@ import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static java.nio.file.StandardOpenOption.WRITE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.mockito.Mockito.times;
 
 public final class UpperRangeTrackingSeekableByteChannelTest
 {
@@ -79,7 +79,7 @@ public final class UpperRangeTrackingSeekableByteChannelTest
     final var channel = new UpperRangeTrackingSeekableByteChannel(this.delegate);
     channel.read(ByteBuffer.allocate(100));
 
-    Mockito.verify(this.delegate, new Times(1))
+    Mockito.verify(this.delegate, times(1))
       .read(Mockito.any());
   }
 
@@ -96,7 +96,7 @@ public final class UpperRangeTrackingSeekableByteChannelTest
     final var channel = new UpperRangeTrackingSeekableByteChannel(this.delegate);
     channel.write(ByteBuffer.allocate(100));
 
-    Mockito.verify(this.delegate, new Times(1))
+    Mockito.verify(this.delegate, times(1))
       .write(Mockito.any());
   }
 
@@ -113,7 +113,7 @@ public final class UpperRangeTrackingSeekableByteChannelTest
     final var channel = new UpperRangeTrackingSeekableByteChannel(this.delegate);
     channel.position();
 
-    Mockito.verify(this.delegate, new Times(1))
+    Mockito.verify(this.delegate, times(1))
       .position();
   }
 
@@ -130,7 +130,7 @@ public final class UpperRangeTrackingSeekableByteChannelTest
     final var channel = new UpperRangeTrackingSeekableByteChannel(this.delegate);
     channel.position(23L);
 
-    Mockito.verify(this.delegate, new Times(1))
+    Mockito.verify(this.delegate, times(1))
       .position(23L);
   }
 
@@ -147,7 +147,7 @@ public final class UpperRangeTrackingSeekableByteChannelTest
     final var channel = new UpperRangeTrackingSeekableByteChannel(this.delegate);
     channel.size();
 
-    Mockito.verify(this.delegate, new Times(1))
+    Mockito.verify(this.delegate, times(1))
       .size();
   }
 
@@ -164,7 +164,7 @@ public final class UpperRangeTrackingSeekableByteChannelTest
     final var channel = new UpperRangeTrackingSeekableByteChannel(this.delegate);
     channel.truncate(23L);
 
-    Mockito.verify(this.delegate, new Times(1))
+    Mockito.verify(this.delegate, times(1))
       .truncate(23L);
   }
 
@@ -182,7 +182,7 @@ public final class UpperRangeTrackingSeekableByteChannelTest
     channel.close();
     assertFalse(channel.isOpen());
 
-    Mockito.verify(this.delegate, new Times(1))
+    Mockito.verify(this.delegate, times(1))
       .close();
   }
 

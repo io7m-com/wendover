@@ -1,19 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>com.io7m.primogenitor</groupId>
-    <artifactId>com.io7m.primogenitor.full</artifactId>
-    <version>8.2.0</version>
+    <artifactId>com.io7m.primogenitor.lite</artifactId>
+    <version>9.2.0</version>
   </parent>
 
   <groupId>com.io7m.wendover</groupId>
   <artifactId>com.io7m.wendover</artifactId>
-  <version>1.0.2</version>
+  <version>1.1.0</version>
 
   <packaging>pom</packaging>
   <name>com.io7m.wendover</name>
@@ -26,12 +24,15 @@
   </modules>
 
   <properties>
+    <io7m.workID>7364d8eb-ee7c-3b46-9eb2-bf9967d3d484</io7m.workID>
+
     <!-- Configuration. -->
-    <io7m.api.previousVersion>1.0.1</io7m.api.previousVersion>
+    <io7m.api.previousVersion>1.0.2</io7m.api.previousVersion>
     <io7m.java.targetJavaVersion>17</io7m.java.targetJavaVersion>
 
     <!-- Third-party dependencies. -->
-    <junit.version>5.10.2</junit.version>
+    <org.junit.version>5.14.3</org.junit.version>
+    <net.byte-buddy.version>1.18.7</net.byte-buddy.version>
   </properties>
 
   <licenses>
@@ -67,13 +68,9 @@
       <name>io7m.com</name>
       <url>https://www.io7m.com/software/wendover</url>
     </site>
-    <repository>
-      <id>sonatype-nexus-staging</id>
-      <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-    </repository>
     <snapshotRepository>
-      <id>sonatype-nexus-snapshots</id>
-      <url>https://s01.oss.sonatype.org/content/repositories/snapshots/</url>
+      <id>central</id>
+      <url>https://central.sonatype.com/repository/maven-snapshots/</url>
     </snapshotRepository>
   </distributionManagement>
 
@@ -91,12 +88,12 @@
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
-        <version>2.0.13</version>
+        <version>2.0.17</version>
       </dependency>
       <dependency>
         <groupId>ch.qos.logback</groupId>
         <artifactId>logback-classic</artifactId>
-        <version>1.5.6</version>
+        <version>1.5.32</version>
       </dependency>
 
       <dependency>
@@ -112,31 +109,28 @@
 
       <!-- Test suite. -->
       <dependency>
-        <groupId>org.junit.jupiter</groupId>
-        <artifactId>junit-jupiter-api</artifactId>
-        <version>${junit.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.junit.jupiter</groupId>
-        <artifactId>junit-jupiter-engine</artifactId>
-        <version>${junit.version}</version>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>${org.junit.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
       </dependency>
 
       <!-- Mockito. -->
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
-        <version>5.12.0</version>
+        <version>5.22.0</version>
       </dependency>
       <dependency>
         <groupId>net.bytebuddy</groupId>
         <artifactId>byte-buddy-agent</artifactId>
-        <version>1.14.15</version>
+        <version>${net.byte-buddy.version}</version>
       </dependency>
       <dependency>
         <groupId>net.bytebuddy</groupId>
         <artifactId>byte-buddy</artifactId>
-        <version>1.14.15</version>
+        <version>${net.byte-buddy.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -153,15 +147,6 @@
         </plugin>
       </plugins>
     </pluginManagement>
-
-    <plugins>
-      <!-- Generate a site -->
-      <plugin>
-        <groupId>com.io7m.minisite</groupId>
-        <artifactId>com.io7m.minisite.maven_plugin</artifactId>
-        <inherited>false</inherited>
-      </plugin>
-    </plugins>
   </build>
 
 </project>
