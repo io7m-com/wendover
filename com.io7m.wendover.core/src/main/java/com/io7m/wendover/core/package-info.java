@@ -19,7 +19,7 @@
  */
 
 @Export
-@Version("1.1.0")
+@Version("1.1.1")
 package com.io7m.wendover.core;
 
 import org.osgi.annotation.bundle.Export;

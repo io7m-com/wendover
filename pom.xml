@@ -11,7 +11,7 @@
 
   <groupId>com.io7m.wendover</groupId>
   <artifactId>com.io7m.wendover</artifactId>
-  <version>1.1.0</version>
+  <version>1.1.1-SNAPSHOT</version>
 
   <packaging>pom</packaging>
   <name>com.io7m.wendover</name>
@@ -27,12 +27,12 @@
     <io7m.workID>7364d8eb-ee7c-3b46-9eb2-bf9967d3d484</io7m.workID>
 
     <!-- Configuration. -->
-    <io7m.api.previousVersion>1.0.2</io7m.api.previousVersion>
+    <io7m.api.previousVersion>1.1.0</io7m.api.previousVersion>
     <io7m.java.targetJavaVersion>17</io7m.java.targetJavaVersion>
 
     <!-- Third-party dependencies. -->
     <org.junit.version>5.14.3</org.junit.version>
-    <net.byte-buddy.version>1.18.7</net.byte-buddy.version>
+    <net.byte-buddy.version>1.18.8</net.byte-buddy.version>
   </properties>
 
   <licenses>
@@ -120,7 +120,7 @@
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
-        <version>5.22.0</version>
+        <version>5.23.0</version>
       </dependency>
       <dependency>
         <groupId>net.bytebuddy</groupId>

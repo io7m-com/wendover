@@ -142,11 +142,11 @@ public final class ByteBufferChannelsTest
 
       channel.position(64L);
       assertEquals(64L, channel.position());
-      assertEquals(64L, channel.size());
+      assertEquals(128L, channel.size());
 
       channel.truncate(32L);
       assertEquals(32L, channel.position());
-      assertEquals(0L, channel.size());
+      assertEquals(32L, channel.size());
     }
   }
 
@@ -177,7 +177,7 @@ public final class ByteBufferChannelsTest
       assertEquals(4, w);
       assertEquals(16L, channel.position());
       assertArrayEquals("1111112222223333".getBytes(UTF_8), backing);
-      assertEquals(0L, channel.size());
+      assertEquals(16L, channel.size());
 
       channel.position(0L);
       assertEquals(0L, channel.position());
@@ -188,7 +188,7 @@ public final class ByteBufferChannelsTest
       assertEquals(6, w);
       assertEquals(12L, channel.position());
       assertArrayEquals("4444445555553333".getBytes(UTF_8), backing);
-      assertEquals(4L, channel.size());
+      assertEquals(16L, channel.size());
 
       w = channel.write(ByteBuffer.wrap("2222".getBytes(UTF_8)));
       assertEquals(4, w);
@@ -280,7 +280,7 @@ public final class ByteBufferChannelsTest
       assertEquals(7L, channel.size());
       channel.write(ByteBuffer.wrap("ABCDEFG".getBytes(UTF_8)));
       assertEquals(7L, channel.position());
-      assertEquals(0L, channel.size());
+      assertEquals(7L, channel.size());
 
       assertArrayEquals(
         "\0\0\0\0ABCDEFG\0\0\0\0\0".getBytes(UTF_8),

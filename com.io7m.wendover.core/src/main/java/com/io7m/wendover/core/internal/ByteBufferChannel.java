@@ -146,7 +146,7 @@ public final class ByteBufferChannel
   public long size()
   {
     return this.withStateReadingLock(
-        () -> Long.valueOf(this.limit - this.position))
+        () -> Long.valueOf(this.limit))
       .longValue();
   }
 
