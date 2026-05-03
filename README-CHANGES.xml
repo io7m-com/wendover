@@ -23,7 +23,7 @@
         <c:change date="2024-05-12T00:00:00+00:00" summary="Move to new organization."/>
       </c:changes>
     </c:release>
-    <c:release date="2026-05-01T15:42:53+00:00" is-open="false" ticket-system="com.github.io7m.wendover" version="1.1.0">
+    <c:release date="2026-05-01T00:00:00+00:00" is-open="false" ticket-system="com.github.io7m.wendover" version="1.1.0">
       <c:changes>
         <c:change date="2024-05-30T00:00:00+00:00" summary="Update net.byte-buddy.version:1.14.16 → 1.14.17."/>
         <c:change date="2024-06-28T00:00:00+00:00" summary="Update org.junit:junit-bom:5.10.2 → 5.10.3."/>
@@ -93,6 +93,11 @@
         <c:change date="2026-04-01T00:00:00+00:00" summary="Update org.junit:junit-bom:5.14.2 → 5.14.3."/>
         <c:change date="2026-04-01T00:00:00+00:00" summary="Update net.byte-buddy.version:1.18.4 → 1.18.7."/>
         <c:change date="2026-05-01T00:00:00+00:00" summary="Add UncloseableSeekableByteChannel."/>
+      </c:changes>
+    </c:release>
+    <c:release date="2026-05-03T15:11:42+00:00" is-open="true" ticket-system="com.github.io7m.wendover" version="1.1.1">
+      <c:changes>
+        <c:change date="2026-05-03T15:11:42+00:00" summary="Fix mis-specified ByteBufferChannel size() method; size is independent of position."/>
       </c:changes>
     </c:release>
   </c:releases>
